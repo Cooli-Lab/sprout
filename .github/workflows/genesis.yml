@@ -1,0 +1,115 @@
+name: Genesis Handler
+
+on:
+  issues:
+    types: [opened]
+
+# Cap one in-flight workflow per architect. Sequential per-author execution
+# prevents race conditions in the rate-limit checks and ensures the
+# post-validation step in `manifest` correctly identifies its own PR.
+concurrency:
+  group: genesis-${{ github.event.issue.user.login }}
+  cancel-in-progress: false
+
+# Fail-closed defaults: each job declares only what it needs.
+permissions: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - run: pip install -r requirements.txt
+
+      - id: gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          AUTHOR_LOGIN: ${{ github.event.issue.user.login }}
+          # Optional: comma-separated GitHub logins. If non-empty, only
+          # those architects may submit. Leave unset to keep the void
+          # open to anyone who passes the other laws.
+          GENESIS_ALLOWLIST: ${{ vars.GENESIS_ALLOWLIST }}
+        run: python scripts/validate.py
+
+  manifest:
+    needs: validate
+    if: needs.validate.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - run: pip install -r requirements.txt
+
+      # Stage the architect's title and body to files so the prompt below
+      # never interpolates untrusted content. The prompt only references
+      # paths and the issue number — both GitHub-controlled.
+      - name: Stage the architect's decree
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          mkdir -p .genesis
+          printf '%s' "$ISSUE_TITLE" > .genesis/title.txt
+          printf '%s' "$ISSUE_BODY"  > .genesis/body.txt
+
+      # Invoke Claude Code with no shell, no network, no git, no gh.
+      # The action's wrapper still commits Claude's edits to a `claude/*`
+      # branch and (typically) opens a PR — that PR is what the
+      # post-validation step then inspects and either merges or closes.
+      - name: Invoke the Genesis Builder
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--allowedTools Edit,Write,Read,Glob,Grep --disallowedTools Bash,WebFetch,WebSearch,TodoWrite"
+          prompt: |
+            You are the Genesis Builder for this repository.
+
+            **Read `CLAUDE.md` in the repository root and obey every law it contains.**
+
+            The triggering architect is **@${{ github.event.issue.user.login }}**.
+            The issue number is **${{ github.event.issue.number }}**.
+
+            The architect's TITLE is in `.genesis/title.txt`.
+            The architect's BODY is in `.genesis/body.txt`.
+
+            Read both files. Then:
+
+            1. Judge the request. If harmful or rule-violating per `CLAUDE.md`, write the reason to `.genesis/refused.txt` and stop.
+            2. Otherwise, manifest the requested files using only `Write` and `Edit`. Stay strictly in scope. Do not touch `.github/`, `scripts/`, `requirements.txt`, `README.md`, `CLAUDE.md`, or `.gitignore`. Do not write outside the repository root.
+            3. Stop when the files are written. Do not commit. Do not open PRs. Do not comment on the issue. The workflow's post-validation step will inspect what you wrote, reject if it violates any law, and merge if all is well.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Defense-in-depth: inspect the actual diff and either merge or
+      # close the PR. This is the load-bearing security layer — Claude's
+      # promises are advisory; the file modes, paths, and sizes are not.
+      - name: Validate the manifestation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          WORKFLOW_STARTED: ${{ github.event.issue.created_at }}
+        run: python scripts/validate_manifestation.py

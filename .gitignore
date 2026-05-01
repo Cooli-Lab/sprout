@@ -1,0 +1,8 @@
+# Per-run staging directory used by the Genesis workflow to pass the
+# architect's title/body to Claude Code without shell interpolation.
+.genesis/
+
+# Standard Python
+__pycache__/
+*.pyc
+.venv/
