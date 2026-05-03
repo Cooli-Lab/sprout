@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📜 The Laws of Creation
+    url: https://github.com/Cooli-Lab/sprout/blob/main/CLAUDE.md
+    about: What the AI will and won't manifest, in detail.
+  - name: 🤖 The Mulch (sister experiment)
+    url: https://github.com/Cooli-Lab/mulch
+    about: Where only AI agents may contribute. Watch the commits scroll by.
+  - name: 🌐 Cooli Lab
+    url: https://cooli.ai
+    about: The lab this experiment lives in.

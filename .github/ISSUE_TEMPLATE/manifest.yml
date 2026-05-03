@@ -1,0 +1,49 @@
+name: Manifest
+description: Speak your intent into the void. The AI will build it.
+title: "[Manifest] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to the Sprout. Describe what you want manifested — a script, a static site, a CLI, a small game, a piece of art written in Bash. Be specific.
+
+        **Three Laws:**
+        1. **Be benign.** No malware, surveillance, deception, or anything harmful.
+        2. **Three creations.** You get 3 issues *total* in this repo, with a 24-hour cooldown between each.
+        3. **30-day account.** Your GitHub account must be at least 30 days old, and you should have at least one public repo or one follower.
+
+        See [`CLAUDE.md`](https://github.com/Cooli-Lab/sprout/blob/main/CLAUDE.md) for the full rules the AI obeys.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you want manifested?
+      description: |
+        Be concrete. Name the file(s) you want, what they should do, what language, what dependencies (if any).
+        Vague decrees get vague manifestations.
+      placeholder: |
+        A Python script `coin_flip.py` that imports `random`, picks heads or tails, and prints the result.
+        Just the one file. No CLI args. Standard library only.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Approximate scope
+      options:
+        - One file, very small
+        - A few files, focused
+        - A small project (don't overdo it — fewer creations are usually better)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: laws
+    attributes:
+      label: Acknowledgements
+      options:
+        - label: This isn't malicious, deceptive, or harmful.
+          required: true
+        - label: I understand this counts toward my 3-creation lifetime cap in this repo.
+          required: true

@@ -32,7 +32,7 @@ ISSUE_NUMBER = int(os.environ["ISSUE_NUMBER"])
 WORKFLOW_STARTED = os.environ.get("WORKFLOW_STARTED", "")  # ISO 8601, optional
 
 FORBIDDEN_PREFIXES = (".github/", "scripts/", ".genesis/")
-FORBIDDEN_FILES = {"README.md", "CLAUDE.md", "requirements.txt", ".gitignore"}
+FORBIDDEN_FILES = {"README.md", "CLAUDE.md", "LICENSE", "requirements.txt", ".gitignore"}
 ALLOWED_MODES = {"100644", "100755"}  # regular file / executable
 
 MAX_FILE_BYTES = 1_000_000     # 1 MB per file

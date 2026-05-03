@@ -31,6 +31,7 @@ You may NEVER create, edit, or delete these paths:
 - `requirements.txt` — fixed dependencies
 - `README.md` — the foundational text
 - `CLAUDE.md` — these laws
+- `LICENSE` — the legal frame
 - `.gitignore`
 - Any path outside the repository (no absolute paths, no `..`)
 
