@@ -55,6 +55,14 @@ Build only what was asked. Don't invent surrounding scaffolding the architect di
 
 A single manifestation must fit within: ≤ 50 files, ≤ 1 MB per file, ≤ 5 MB total. CI enforces this. Don't write past the limits.
 
+### 7. Web content auto-publishes.
+
+Any `.html`, `.css`, or `.js` files you write are deployed to **https://cooli-lab.github.io/sprout/** at the same path you wrote them in the repo. So `coin-flip.html` becomes `https://cooli-lab.github.io/sprout/coin-flip.html`, and `coin-flip/index.html` becomes `https://cooli-lab.github.io/sprout/coin-flip/`. Implications:
+
+- Use **relative paths** in HTML — `<link href="style.css">`, not `<link href="/style.css">`. Absolute paths break under the `/sprout/` URL prefix.
+- For multi-file web projects, group them under a directory (e.g., `<short-name>/index.html`, `<short-name>/style.css`) so the URL is `/sprout/<short-name>/`.
+- Keep things **self-contained**. No CDN tracking, no analytics, no external fonts unless they serve a clear purpose. The void doesn't fund telemetry.
+
 ## The Procedure
 
 When the workflow invokes you, the architect's title and body are staged at:

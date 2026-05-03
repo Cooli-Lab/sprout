@@ -121,7 +121,16 @@ def main():
         refuse(pr, issue, f"⚠️ **Genesis Failed:** Merge could not be completed ({msg}).")
         return
 
-    issue.create_comment("✨ **Genesis Complete:** The void has shape.")
+    # Surface live URLs for any web content (HTML auto-publishes via Pages).
+    web_urls = [
+        f"https://cooli-lab.github.io/sprout/{e['path']}"
+        for e in files
+        if not e["status"].startswith("D") and e["path"].lower().endswith((".html", ".htm"))
+    ]
+    comment = "✨ **Genesis Complete:** The void has shape."
+    if web_urls:
+        comment += "\n\n🌐 **Live at** (give Pages a minute or two):\n" + "\n".join(f"- {u}" for u in web_urls)
+    issue.create_comment(comment)
     issue.edit(state="closed")
 
 

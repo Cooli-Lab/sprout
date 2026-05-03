@@ -18,6 +18,8 @@ A working example body:
 
 > A Python script `coin_flip.py` that imports `random`, picks heads or tails, and prints the result. Just the file. No CLI args. Standard library only.
 
+If your decree produces a web page, the AI can build that too. Anything `.html`, `.css`, `.js` auto-publishes to **<https://cooli-lab.github.io/sprout/>** at the same path it lives in the repo (so `coin-flip/index.html` becomes `/sprout/coin-flip/`). The success comment on your issue will include the live URL.
+
 ## 🔁 How it works
 
 ```mermaid
