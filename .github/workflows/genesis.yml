@@ -15,6 +15,45 @@ concurrency:
 permissions: {}
 
 jobs:
+  notify-discord:
+    # Pings the Herald's Discord webhook the moment an issue is opened —
+    # before validation runs. Even a denied/refused submission gets a ping.
+    # Runs in parallel with `validate` (no `needs:`) so it doesn't block.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL not set — skipping ping."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os, urllib.request
+          title  = os.environ["ISSUE_TITLE"]
+          url    = os.environ["ISSUE_URL"]
+          author = os.environ["AUTHOR"]
+          body   = (os.environ.get("BODY") or "").strip()
+          excerpt = body[:240] + ("…" if len(body) > 240 else "")
+          msg = f"🌱 **New Sandbox issue** from `@{author}`\n**{title}**"
+          if excerpt:
+              msg += f"\n> {excerpt}"
+          msg += f"\n{url}"
+          req = urllib.request.Request(
+              os.environ["WEBHOOK_URL"],
+              method="POST",
+              headers={"Content-Type": "application/json"},
+              data=json.dumps({"content": msg, "username": "The Herald"}).encode(),
+          )
+          urllib.request.urlopen(req, timeout=10)
+          print("Posted to Discord.")
+          PY
+
   validate:
     runs-on: ubuntu-latest
     permissions:
