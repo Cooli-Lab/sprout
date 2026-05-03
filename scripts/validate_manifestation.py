@@ -47,11 +47,12 @@ def main():
     repo = g.get_repo(REPO_NAME)
     issue = repo.get_issue(ISSUE_NUMBER)
 
-    # Stage 1: explicit refusal from the Builder
+    # Stage 1: explicit refusal from the Builder. Per CLAUDE.md, the file
+    # contains a 1-2 line roast that becomes the comment body.
     if os.path.exists(REFUSED_FILE):
         with open(REFUSED_FILE, encoding="utf-8") as f:
-            reason = f.read().strip() or "no reason given"
-        seal_issue(issue, f"🛑 **Genesis Refused:** {reason}")
+            roast = f.read().strip() or "no reason given"
+        seal_issue(issue, f"🛑 *Genesis Refused.*\n\n{roast}")
         return
 
     # Stage 2: find the PR
