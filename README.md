@@ -1,4 +1,4 @@
-# 🌱 The Crowdsourced AI Sandbox
+# 🌱 The Sprout
 
 > *In the beginning, this repository was without form, and void.
 > Speak your intent, and let there be code.*

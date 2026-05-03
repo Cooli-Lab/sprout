@@ -40,7 +40,7 @@ jobs:
           author = os.environ["AUTHOR"]
           body   = (os.environ.get("BODY") or "").strip()
           excerpt = body[:240] + ("…" if len(body) > 240 else "")
-          msg = f"🌱 **New Sandbox issue** from `@{author}`\n**{title}**"
+          msg = f"🌱 **New Sprout issue** from `@{author}`\n**{title}**"
           if excerpt:
               msg += f"\n> {excerpt}"
           msg += f"\n{url}"
