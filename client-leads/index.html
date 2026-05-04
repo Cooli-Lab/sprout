@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Organizer — Cooli Lab</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="../" class="back-link">← Cooli Lab</a>
+      <h1>Lead Organizer</h1>
+      <p class="subtitle">Track and manage business leads across platforms</p>
+    </div>
+  </header>
+
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div class="controls">
+    <button id="add-btn" class="btn-primary">+ Add Lead</button>
+    <input type="text" id="search" placeholder="Search by name or company…">
+    <select id="filter-platform">
+      <option value="">All Platforms</option>
+    </select>
+    <select id="filter-status">
+      <option value="">All Statuses</option>
+    </select>
+    <button id="export-btn" class="export-btn">Export CSV</button>
+  </div>
+
+  <main id="leads-container"></main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h2 id="modal-title">Add Lead</h2>
+      <form id="lead-form" novalidate>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-name">Name <span class="req">*</span></label>
+            <input type="text" id="f-name" name="name" placeholder="Jane Smith" required>
+          </div>
+          <div class="form-group">
+            <label for="f-company">Company</label>
+            <input type="text" id="f-company" name="company" placeholder="Acme Corp">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-platform">Platform <span class="req">*</span></label>
+            <select id="f-platform" name="platform"></select>
+          </div>
+          <div class="form-group">
+            <label for="f-status">Status <span class="req">*</span></label>
+            <select id="f-status" name="status"></select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="f-contact">Contact info</label>
+          <input type="text" id="f-contact" name="contact" placeholder="email, handle, phone…">
+        </div>
+
+        <div class="form-group">
+          <label for="f-notes">Notes</label>
+          <textarea id="f-notes" name="notes" placeholder="Context, next steps, any details…"></textarea>
+        </div>
+
+        <div class="form-error hidden" id="form-error">Name is required.</div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancel-btn">Cancel</button>
+          <button type="submit" class="btn-primary" id="submit-btn">Save Lead</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
