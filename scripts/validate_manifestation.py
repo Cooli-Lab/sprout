@@ -46,13 +46,15 @@ def main():
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(REPO_NAME)
     issue = repo.get_issue(ISSUE_NUMBER)
+    architect = issue.user.login if issue.user else None
 
     # Stage 1: explicit refusal from the Builder. Per CLAUDE.md, the file
     # contains a 1-2 line roast that becomes the comment body.
     if os.path.exists(REFUSED_FILE):
         with open(REFUSED_FILE, encoding="utf-8") as f:
             roast = f.read().strip() or "no reason given"
-        seal_issue(issue, f"🛑 *Genesis Refused.*\n\n{roast}")
+        prefix = f"@{architect} " if architect else ""
+        seal_issue(issue, f"🛑 *Genesis Refused.*\n\n{prefix}{roast}")
         return
 
     # Stage 2: find the PR
@@ -127,7 +129,8 @@ def main():
         for e in files
         if not e["status"].startswith("D") and e["path"].lower().endswith((".html", ".htm"))
     ]
-    comment = "✨ **Genesis Complete:** The void has shape."
+    mention = f"@{architect} — " if architect else ""
+    comment = f"✨ **Genesis Complete.** {mention}your manifestation has been merged into `main`."
     if web_urls:
         comment += "\n\n🌐 **Live at** (give Pages a minute or two):\n" + "\n".join(f"- {u}" for u in web_urls)
     issue.create_comment(comment)

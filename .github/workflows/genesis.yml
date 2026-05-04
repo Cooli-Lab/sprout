@@ -19,9 +19,12 @@ jobs:
     # Pings the Herald's Discord webhook the moment an issue is opened —
     # before validation runs. Even a denied/refused submission gets a ping.
     # Runs in parallel with `validate` (no `needs:`) so it doesn't block.
+    # `continue-on-error` so a stale webhook URL doesn't fail the workflow.
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Ping
+        continue-on-error: true
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
@@ -90,6 +93,10 @@ jobs:
       issues: write
       contents: write
       pull-requests: write
+      # Required by anthropics/claude-code-action — it uses OIDC to
+      # validate the OAuth token. Without this, the action fails with
+      # "Could not fetch an OIDC token".
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:

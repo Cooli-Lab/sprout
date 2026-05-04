@@ -86,6 +86,11 @@ def main():
 
     ensure_label(repo, PROCESSING_LABEL)
     issue.add_to_labels(PROCESSING_LABEL)
+    issue.create_comment(
+        f"🌱 @{AUTHOR_LOGIN} — verified. Genesis is processing your decree now.\n\n"
+        f"Watch the [**Actions** tab](https://github.com/{REPO_NAME}/actions) for live progress; "
+        f"I'll comment again here when it's done (usually 1–3 min)."
+    )
     print("Architect verified. Proceeding to genesis.")
     emit("proceed", "true")
 
