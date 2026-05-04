@@ -2,7 +2,11 @@ name: Genesis Handler
 
 on:
   issues:
-    types: [opened]
+    # `reopened` lets us retry a failed run by closing + reopening the
+    # issue. validate.py already short-circuits if the processing label
+    # is set, so accidentally reopening a successful run is a no-op
+    # unless the label is removed first.
+    types: [opened, reopened]
 
 # Cap one in-flight workflow per architect. Sequential per-author execution
 # prevents race conditions in the rate-limit checks and ensures the
