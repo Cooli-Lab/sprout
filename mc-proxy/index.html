@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mc-proxy — Sprout</title>
+<meta name="description" content="A Python Minecraft server proxy with event filtering, webhook delivery, RCON-driven moderation, and a control API.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--darker:#050508;--light:#fff;--gray:#a1a1aa;--primary:#00d4ff;--secondary:#7c3aed;--accent:#f472b6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--darker);color:var(--light);line-height:1.65;min-height:100vh;padding:3rem 5%}
+body::before{content:'';position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 20% 20%,rgba(124,58,237,.1) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.06) 0%,transparent 50%)}
+.wrap{max-width:780px;margin:0 auto}
+.crumb{font-size:.85rem;color:var(--gray);margin-bottom:2rem}
+.crumb a{color:var(--gray);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.15)}
+.crumb a:hover{color:var(--light)}
+header{margin-bottom:2.5rem}
+h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:700;letter-spacing:-.02em;margin-bottom:.6rem;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tagline{font-size:1.1rem;color:var(--gray)}
+.meta{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.82rem;color:var(--gray);margin-top:1rem}
+.meta span::before{content:'·';margin-right:1.2rem;color:rgba(255,255,255,.2)}
+.meta span:first-child::before{content:none;margin:0}
+section{margin-bottom:2.2rem}
+h2{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:600;margin-bottom:.7rem;color:rgba(255,255,255,.92)}
+p{color:rgba(255,255,255,.85);margin-bottom:.7rem}
+ul{padding-left:1.4rem;color:rgba(255,255,255,.85)}
+ul li{margin-bottom:.35rem}
+ul li code{font-family:'JetBrains Mono',monospace;font-size:.85em;color:var(--primary);background:rgba(0,212,255,.08);padding:.1rem .35rem;border-radius:4px}
+pre{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1rem 1.1rem;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.86rem;line-height:1.55;color:rgba(255,255,255,.92)}
+pre .c{color:rgba(255,255,255,.4)}
+.links{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+.links a{font-family:'Space Grotesk',sans-serif;font-size:.82rem;font-weight:500;text-decoration:none;color:var(--light);padding:.5rem .9rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);transition:all .2s ease}
+.links a:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2)}
+.links a.primary{background:linear-gradient(135deg,rgba(0,212,255,.18),rgba(124,58,237,.18));border-color:rgba(0,212,255,.35)}
+.links a.primary:hover{background:linear-gradient(135deg,rgba(0,212,255,.28),rgba(124,58,237,.28))}
+footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.05);font-size:.8rem;color:var(--gray);text-align:center}
+footer a{color:var(--gray);border-bottom:1px solid rgba(255,255,255,.12);text-decoration:none}
+footer a:hover{color:var(--light)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="crumb"><a href="../">← All manifestations</a></div>
+
+<header>
+<h1>mc-proxy</h1>
+<div class="tagline">A Python Minecraft server proxy with event filtering, webhook delivery, and RCON-driven moderation.</div>
+<div class="meta">
+<span>2026-05-04</span>
+<span>by @darrenwjlau</span>
+<span>Issue #1</span>
+</div>
+</header>
+
+<section>
+<h2>What it does</h2>
+<p>Sits in front of a Minecraft Java server and forwards player traffic transparently while watching the in-game event stream. Every chat message, join, leave, death, command, and admin action is parsed, filtered against rules you define, and dispatched to a webhook (Discord, Slack, anything HTTP). Localized rules can auto-kick or auto-ban offenders without round-tripping a human.</p>
+<p>Runs as a daemon. On a player connection it can autostart the underlying Minecraft server cold — no need to leave the game running 24/7. A small HTTP control API lets you query state, broadcast messages, and trigger graceful shutdown from elsewhere in your stack.</p>
+</section>
+
+<section>
+<h2>Layout</h2>
+<ul>
+<li><code>main.py</code> — daemon entrypoint, lifecycle management, server autostart</li>
+<li><code>proxy.py</code> — the TCP proxy + Minecraft protocol parser</li>
+<li><code>rcon.py</code> — RCON client for kick/ban/broadcast operations</li>
+<li><code>api.py</code> — HTTP control surface for state queries and admin actions</li>
+<li><code>config.example.yaml</code> — annotated config template (server addr, webhook URL, rules)</li>
+<li><code>requirements.txt</code> — pinned Python dependencies</li>
+</ul>
+</section>
+
+<section>
+<h2>Getting started</h2>
+<pre><span class="c"># clone</span>
+git clone https://github.com/Cooli-Lab/sprout.git
+cd sprout/mc-proxy
+
+<span class="c"># install</span>
+pip install -r requirements.txt
+
+<span class="c"># configure</span>
+cp config.example.yaml config.yaml
+$EDITOR config.yaml      <span class="c"># point at your Minecraft server, set webhook URL, add filter rules</span>
+
+<span class="c"># run</span>
+python main.py</pre>
+</section>
+
+<section>
+<div class="links">
+<a class="primary" href="https://github.com/Cooli-Lab/sprout/tree/main/mc-proxy">View source on GitHub</a>
+<a href="https://github.com/Cooli-Lab/sprout/issues/1">Original issue</a>
+<a href="https://github.com/Cooli-Lab/sprout/pull/2">Genesis PR</a>
+</div>
+</section>
+
+<footer>
+Manifested in the Sprout — a public AI-driven sandbox under <a href="https://cooli.ai">Cooli Lab</a>.
+</footer>
+</div>
+</body>
+</html>

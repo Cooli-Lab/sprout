@@ -1,7 +1,9 @@
 # Manifestations
 
 A running log of what's been manifested in the [Sprout](./README.md). Newest first.
+Visible at [cooli.ai/sprouts](https://cooli.ai/sprouts/) (gallery) or
+[cooli-lab.github.io/sprout](https://cooli-lab.github.io/sprout/) (direct).
 
-| Date | Architect | Decree | Issue | PR | Files |
-|---|---|---|---|---|---|
-| 2026-05-04 | [@darrenwjlau](https://github.com/darrenwjlau) | A python Minecraft server proxy | [#1](https://github.com/Cooli-Lab/sprout/issues/1) | [#2](https://github.com/Cooli-Lab/sprout/pull/2) | `mc-proxy/api.py`, `mc-proxy/config.example.yaml`, `mc-proxy/main.py`, `mc-proxy/proxy.py` (+2 more) |
+| Date | Architect | Decree | Path | Issue | PR | Files |
+|---|---|---|---|---|---|---|
+| 2026-05-04 | [@darrenwjlau](https://github.com/darrenwjlau) | A python Minecraft server proxy | `mc-proxy` | [#1](https://github.com/Cooli-Lab/sprout/issues/1) | [#2](https://github.com/Cooli-Lab/sprout/pull/2) | `mc-proxy/api.py`, `mc-proxy/config.example.yaml`, `mc-proxy/main.py`, `mc-proxy/proxy.py` (+2 more) |

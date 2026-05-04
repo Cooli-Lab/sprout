@@ -33,6 +33,7 @@ You may NEVER create, edit, or delete these paths:
 - `CLAUDE.md` — these laws
 - `LICENSE` — the legal frame
 - `MANIFESTATIONS.md` — the running log of past creations (auto-maintained by the workflow)
+- `index.html` (top-level only) — the gallery shown at cooli.ai/sprouts/ (auto-maintained). Subdirectory `index.html` files like `<your-project>/index.html` are FINE and encouraged.
 - `.gitignore`
 - Any path outside the repository (no absolute paths, no `..`)
 
@@ -58,11 +59,20 @@ A single manifestation must fit within: ≤ 50 files, ≤ 1 MB per file, ≤ 5 M
 
 ### 7. Web content auto-publishes.
 
-Any `.html`, `.css`, or `.js` files you write are deployed to **https://cooli-lab.github.io/sprout/** at the same path you wrote them in the repo. So `coin-flip.html` becomes `https://cooli-lab.github.io/sprout/coin-flip.html`, and `coin-flip/index.html` becomes `https://cooli-lab.github.io/sprout/coin-flip/`. Implications:
+Any `.html`, `.css`, or `.js` files you write are deployed to **https://cooli-lab.github.io/sprout/** (and via proxy to **https://cooli.ai/sprouts/**) at the same path you wrote them in the repo. So `<short-name>/index.html` becomes `https://cooli.ai/sprouts/<short-name>/`. Implications:
 
-- Use **relative paths** in HTML — `<link href="style.css">`, not `<link href="/style.css">`. Absolute paths break under the `/sprout/` URL prefix.
-- For multi-file web projects, group them under a directory (e.g., `<short-name>/index.html`, `<short-name>/style.css`) so the URL is `/sprout/<short-name>/`.
+- Use **relative paths** in HTML — `<link href="style.css">`, not `<link href="/style.css">`. Absolute paths break under the `/sprouts/` URL prefix.
+- Group multi-file projects under a directory (e.g. `<short-name>/index.html`, `<short-name>/style.css`).
 - Keep things **self-contained**. No CDN tracking, no analytics, no external fonts unless they serve a clear purpose. The void doesn't fund telemetry.
+
+### 8. Make every manifestation visible.
+
+Whatever the architect asked for — web app, CLI, library, script — **always include `<your-project>/index.html`** as a small showcase page describing what was built. The gallery at the repo root links to it. For:
+
+- **Web apps**: `index.html` IS the app.
+- **CLI / backend / library projects**: `index.html` is a static description page — title, one-paragraph "what it does", a code block showing how to install/run, and a link to the source files. No live demo necessary; just enough that a visitor lands somewhere meaningful.
+
+Style the showcase to match cooli.ai (dark background, sober palette) but keep it under 200 lines of HTML/CSS. No frameworks, no build step, no JS unless the app actually needs it.
 
 ## The Procedure
 

@@ -222,15 +222,16 @@ jobs:
           git checkout main
           git pull --ff-only origin main
           python scripts/update_log.py
-          if git diff --quiet -- MANIFESTATIONS.md; then
-            echo "Log already up to date."
+          python scripts/update_index.py
+          if git diff --quiet -- MANIFESTATIONS.md index.html; then
+            echo "Log + gallery already up to date."
             exit 0
           fi
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config --unset-all "http.https://github.com/.extraheader" || true
           git config user.name  "Genesis Builder"
           git config user.email "genesis@cooli.ai"
-          git add MANIFESTATIONS.md
+          git add MANIFESTATIONS.md index.html
           # [skip ci] keeps this commit from re-firing the workflow.
-          git commit -m "Log: Issue #${ISSUE_NUMBER} [skip ci]"
+          git commit -m "Log + gallery: Issue #${ISSUE_NUMBER} [skip ci]"
           git push origin main

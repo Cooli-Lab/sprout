@@ -26,9 +26,11 @@ MERGED_FLAG = Path(".genesis/merged.txt")
 HEADER = """# Manifestations
 
 A running log of what's been manifested in the [Sprout](./README.md). Newest first.
+Visible at [cooli.ai/sprouts](https://cooli.ai/sprouts/) (gallery) or
+[cooli-lab.github.io/sprout](https://cooli-lab.github.io/sprout/) (direct).
 
-| Date | Architect | Decree | Issue | PR | Files |
-|---|---|---|---|---|---|
+| Date | Architect | Decree | Path | Issue | PR | Files |
+|---|---|---|---|---|---|---|
 """
 
 
@@ -56,6 +58,12 @@ def main():
     if not files_cell:
         files_cell = "—"
 
+    # Pick a project directory: most common top-level directory in the diff.
+    # Falls back to "." if everything was committed at the repo root.
+    from collections import Counter
+    top_dirs = [p.split("/", 1)[0] for p in file_paths if "/" in p]
+    project_path = Counter(top_dirs).most_common(1)[0][0] if top_dirs else "."
+
     date = (pr.merged_at or datetime.now(timezone.utc)).strftime("%Y-%m-%d")
 
     architect_cell = "—"
@@ -72,18 +80,21 @@ def main():
         issue_cell = f"[#{issue_num}](https://github.com/{REPO_NAME}/issues/{issue_num})"
 
     pr_cell = f"[#{pr.number}](https://github.com/{REPO_NAME}/pull/{pr.number})"
+    path_cell = f"`{project_path}`"
 
-    new_row = f"| {date} | {architect_cell} | {decree_cell} | {issue_cell} | {pr_cell} | {files_cell} |"
+    new_row = f"| {date} | {architect_cell} | {decree_cell} | {path_cell} | {issue_cell} | {pr_cell} | {files_cell} |"
 
     if LOG_FILE.exists():
         existing = LOG_FILE.read_text()
         if new_row in existing:
             print(f"Entry for PR #{pr.number} already in log — skipping.")
             return
-        if "|---|---|" in existing:
+        # Find the table separator and insert the new row right below it.
+        sep_re = re.compile(r"^\|(\s*-+\s*\|){4,}", re.MULTILINE)
+        if sep_re.search(existing):
             lines = existing.splitlines()
             for i, line in enumerate(lines):
-                if line.startswith("|---|---|"):
+                if sep_re.match(line):
                     lines.insert(i + 1, new_row)
                     break
             content = "\n".join(lines) + ("\n" if not existing.endswith("\n") else "")
