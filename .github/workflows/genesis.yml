@@ -218,6 +218,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          # Optional. If set, update_log.py polishes the raw issue
+          # title into a professional product-style name via Gemini
+          # before logging the decree. Falls back gracefully when
+          # missing or on any API error.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           set -e
           # Pull the freshly-merged main and run the log generator there.
