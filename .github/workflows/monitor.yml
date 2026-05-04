@@ -1,0 +1,98 @@
+name: Monitor
+
+# Every 3 hours: scan Genesis Handler runs from the last window, surface
+# anything that failed/cancelled/timed out, and ping Discord if so.
+# Silent when everything's clean — only complains when there's something
+# to complain about.
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  issues: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan recent runs and alert
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL not set — skipping monitor."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+          from datetime import datetime, timedelta, timezone
+
+          REPO = os.environ["REPOSITORY"]
+          TOKEN = os.environ["GH_TOKEN"]
+          WEBHOOK = os.environ["WEBHOOK_URL"]
+
+          # 3.5h window — slight overlap with the previous run so a failure
+          # right at the boundary doesn't slip through.
+          window_h = 3.5
+          since = (datetime.now(timezone.utc) - timedelta(hours=window_h)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {TOKEN}",
+              "X-GitHub-Api-Version": "2022-11-28",
+          }
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{REPO}/actions/runs?created=%3E{since}&per_page=50",
+              headers=headers,
+          )
+          with urllib.request.urlopen(req, timeout=15) as r:
+              data = json.load(r)
+
+          runs = data.get("workflow_runs", [])
+          # Don't alert on the Monitor's own runs.
+          runs = [r for r in runs if r.get("name") != "Monitor"]
+
+          BAD = {"failure", "cancelled", "timed_out", "action_required", "startup_failure"}
+          failed = [r for r in runs if (r.get("conclusion") or "") in BAD]
+
+          # Stuck runs: still in_progress and started >40 min ago.
+          now = datetime.now(timezone.utc)
+          stuck = []
+          for r in runs:
+              if r.get("status") == "in_progress":
+                  started = datetime.fromisoformat(r["created_at"].replace("Z", "+00:00"))
+                  if now - started > timedelta(minutes=40):
+                      stuck.append(r)
+
+          if not failed and not stuck:
+              print(f"All clear — {len(runs)} run(s) in window, none failed, none stuck.")
+              raise SystemExit(0)
+
+          lines = [f"⚠️ **Sprout monitor** ({len(failed)} failed, {len(stuck)} stuck — last {int(window_h)}h)"]
+          for r in failed[:6]:
+              ts = r["created_at"][:16].replace("T", " ")
+              lines.append(f"- ❌ [{r['name']} · {r['conclusion']}]({r['html_url']}) at {ts}")
+          if len(failed) > 6:
+              lines.append(f"  …and {len(failed) - 6} more failed")
+          for r in stuck[:3]:
+              ts = r["created_at"][:16].replace("T", " ")
+              lines.append(f"- 🐌 [{r['name']} · stuck since {ts}]({r['html_url']})")
+
+          payload = {"content": "\n".join(lines)[:1900], "username": "Sprout Monitor"}
+          try:
+              req = urllib.request.Request(
+                  WEBHOOK,
+                  method="POST",
+                  headers={"Content-Type": "application/json"},
+                  data=json.dumps(payload).encode(),
+              )
+              urllib.request.urlopen(req, timeout=10)
+              print(f"Alerted on {len(failed)} failure(s) and {len(stuck)} stuck run(s).")
+          except urllib.error.HTTPError as e:
+              print(f"Webhook failed: {e.code} {e.read()[:200]}")
+              raise SystemExit(1)
+          PY
