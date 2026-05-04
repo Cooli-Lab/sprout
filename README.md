@@ -48,6 +48,10 @@ The full laws live in [`CLAUDE.md`](./CLAUDE.md), which the AI reads on every in
 
 4. **The genesis machinery is sacred.** The AI cannot write to `.github/`, `scripts/`, `requirements.txt`, `README.md`, `CLAUDE.md`, or `.gitignore`. The bones cannot rewrite themselves.
 
+## 📜 What's been built
+
+Every successful manifestation is logged in [`MANIFESTATIONS.md`](./MANIFESTATIONS.md) — a running list of decrees, the architects who made them, and the files that came back. The log auto-updates after each merge.
+
 ## 🌒 What happens next
 
 Whatever you wished for is now in this repository. Permanent. Public. Yours and everyone's.

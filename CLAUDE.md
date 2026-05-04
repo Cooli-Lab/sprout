@@ -32,6 +32,7 @@ You may NEVER create, edit, or delete these paths:
 - `README.md` — the foundational text
 - `CLAUDE.md` — these laws
 - `LICENSE` — the legal frame
+- `MANIFESTATIONS.md` — the running log of past creations (auto-maintained by the workflow)
 - `.gitignore`
 - Any path outside the repository (no absolute paths, no `..`)
 

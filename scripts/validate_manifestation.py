@@ -32,7 +32,7 @@ ISSUE_NUMBER = int(os.environ["ISSUE_NUMBER"])
 WORKFLOW_STARTED = os.environ.get("WORKFLOW_STARTED", "")  # ISO 8601, optional
 
 FORBIDDEN_PREFIXES = (".github/", "scripts/", ".genesis/")
-FORBIDDEN_FILES = {"README.md", "CLAUDE.md", "LICENSE", "requirements.txt", ".gitignore"}
+FORBIDDEN_FILES = {"README.md", "CLAUDE.md", "LICENSE", "MANIFESTATIONS.md", "requirements.txt", ".gitignore"}
 ALLOWED_MODES = {"100644", "100755"}  # regular file / executable
 
 MAX_FILE_BYTES = 1_000_000     # 1 MB per file
@@ -122,6 +122,11 @@ def main():
         msg = e.data.get("message", str(e.status)) if isinstance(e.data, dict) else str(e.status)
         refuse(pr, issue, f"⚠️ **Genesis Failed:** Merge could not be completed ({msg}).")
         return
+
+    # Signal the log-update step that a merge happened.
+    os.makedirs(".genesis", exist_ok=True)
+    with open(".genesis/merged.txt", "w") as f:
+        f.write(str(pr.number))
 
     # Surface live URLs for any web content (HTML auto-publishes via Pages).
     web_urls = [
