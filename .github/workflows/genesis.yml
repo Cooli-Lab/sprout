@@ -162,6 +162,7 @@ jobs:
         if: ${{ !cancelled() }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
         run: |
@@ -170,9 +171,13 @@ jobs:
             echo "Refusal staged by Claude — no commit needed."
             exit 0
           fi
+          # The Claude Code Action runs internal git operations that
+          # can leave the working tree's credentials in a state where
+          # `git push` fails with 'Authentication failed'. Re-establish
+          # them via gh's credential helper.
+          gh auth setup-git
           git config user.name  "Genesis Builder"
           git config user.email "genesis@cooli.ai"
-          # Stage only what's actually in the repo (skip .genesis/ which is gitignored anyway).
           git add -A
           if git diff --cached --quiet; then
             echo "No file changes from Claude."
