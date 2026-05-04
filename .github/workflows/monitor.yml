@@ -87,7 +87,12 @@ jobs:
               req = urllib.request.Request(
                   WEBHOOK,
                   method="POST",
-                  headers={"Content-Type": "application/json"},
+                  headers={
+                      "Content-Type": "application/json",
+                      # Discord's Cloudflare front rejects the default Python-urllib
+                      # user-agent with error 1010. A descriptive UA bypasses it.
+                      "User-Agent": "cooli-monitor/1.0 (+https://cooli.ai)",
+                  },
                   data=json.dumps(payload).encode(),
               )
               urllib.request.urlopen(req, timeout=10)
