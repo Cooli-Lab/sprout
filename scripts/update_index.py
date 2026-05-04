@@ -8,6 +8,7 @@ Triggered by the workflow alongside update_log.py. The output file is
 in FORBIDDEN_FILES so Claude can never overwrite it; only this
 script can update it.
 """
+import json
 import os
 import re
 from datetime import datetime, timezone
@@ -37,6 +38,51 @@ def parse_log():
         d["decree"] = d["decree"].strip().replace("\\|", "|")
         rows.append(d)
     return rows
+
+
+def gallery_jsonld(rows):
+    """ItemList of Article entries — one per manifestation. AI engines
+    treat each row as a citable artifact instead of an opaque link."""
+    if not rows:
+        return ""
+    items = []
+    for i, r in enumerate(rows):
+        path = r["path"]
+        has_live = (Path(path) / "index.html").exists()
+        url = (
+            f"https://cooli.ai/sprouts/{path}/" if has_live
+            else f"https://github.com/{REPO_NAME}/tree/main/{path}"
+        )
+        items.append({
+            "@type": "ListItem",
+            "position": i + 1,
+            "item": {
+                "@type": "Article",
+                "headline": r["decree"],
+                "url": url,
+                "datePublished": r["date"],
+                "author": {"@type": "Person", "name": "@" + r["arch"], "url": r["arch_url"]},
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "Cooli AI",
+                    "url": "https://cooli.ai/",
+                    "logo": "https://cooli.ai/logo.png",
+                },
+                "isPartOf": {
+                    "@type": "Collection",
+                    "name": "Sprout — Cooli Lab",
+                    "url": "https://cooli.ai/sprouts/",
+                },
+            },
+        })
+    ld = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Sprout manifestations",
+        "description": "AI-built projects manifested from human-authored GitHub Issues in the Cooli Lab.",
+        "itemListElement": items,
+    }
+    return '<script type="application/ld+json">' + json.dumps(ld, separators=(",", ":")) + "</script>"
 
 
 def card_html(r):
@@ -303,6 +349,7 @@ def main():
         body = '<div class="empty">Nothing manifested yet. <a href="https://github.com/{repo}/issues/new/choose">Be the first</a>.</div>'.format(repo=REPO_NAME)
     else:
         body = '<div class="gallery">\n' + "\n".join(card_html(r) for r in rows) + "\n  </div>"
+    body = gallery_jsonld(rows) + body
     INDEX.write_text(PAGE.format(repo=REPO_NAME, body=body))
     print(f"Wrote {INDEX} with {len(rows)} card(s).")
 
