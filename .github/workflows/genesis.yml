@@ -153,6 +153,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Claude wrote files into the runner's working tree but the
+      # custom-prompt mode of claude-code-action doesn't auto-commit.
+      # If anything was written (and it wasn't a refusal), commit it on
+      # a branch named `genesis/issue-N` and open a PR. The next step
+      # finds that PR and either merges or closes it.
+      - name: Commit the manifestation
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          set -e
+          if [ -f .genesis/refused.txt ]; then
+            echo "Refusal staged by Claude — no commit needed."
+            exit 0
+          fi
+          git config user.name  "Genesis Builder"
+          git config user.email "genesis@cooli.ai"
+          # Stage only what's actually in the repo (skip .genesis/ which is gitignored anyway).
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No file changes from Claude."
+            exit 0
+          fi
+          BR="genesis/issue-${ISSUE_NUMBER}"
+          git checkout -b "$BR"
+          git commit -m "Genesis: manifest from Issue #${ISSUE_NUMBER}"
+          git push -u origin "$BR"
+          gh pr create \
+            --base main --head "$BR" \
+            --title "Genesis: ${ISSUE_TITLE}" \
+            --body "Manifested from Issue #${ISSUE_NUMBER}." || true
+
       # Defense-in-depth: inspect the actual diff and either merge or
       # close the PR. This is the load-bearing security layer — Claude's
       # promises are advisory; the file modes, paths, and sizes are not.
