@@ -1,0 +1,138 @@
+# mc-proxy configuration — copy to config.yml and edit
+
+# -----------------------------------------------------------------
+# Proxy listener (what clients connect to)
+# -----------------------------------------------------------------
+proxy:
+  host: "0.0.0.0"
+  port: 25565
+
+# -----------------------------------------------------------------
+# Backend Minecraft server
+# Set online-mode=false in server.properties so the proxy can
+# inspect all traffic. Set port to something other than 25565
+# (e.g. 25566) and block it from public access.
+# -----------------------------------------------------------------
+backend:
+  host: "127.0.0.1"
+  port: 25566
+
+# -----------------------------------------------------------------
+# Managed Minecraft server process
+# The proxy will start this command when it starts up (autostart),
+# and will start it again when a player joins while it is offline
+# (on-join autostart). Set autostart: false to manage the server
+# process yourself.
+# -----------------------------------------------------------------
+server:
+  command: "java -Xmx2G -Xms512M -jar server.jar --nogui"
+  dir: "/opt/minecraft"       # working directory for the command
+  autostart: true             # start server when proxy starts
+  ready_pattern: "Done ("     # line in server stdout that means ready
+
+# -----------------------------------------------------------------
+# Webhooks — receive event payloads via HTTP POST
+# Discord webhook URLs are detected automatically and formatted
+# as rich embeds. All other URLs receive plain JSON.
+# -----------------------------------------------------------------
+webhooks:
+  - url: "https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN"
+  - url: "https://your-app.example.com/hooks/minecraft"   # generic JSON
+
+# -----------------------------------------------------------------
+# Event filter — which events to forward to webhooks.
+# Remove entries to silence specific events globally.
+# -----------------------------------------------------------------
+event_filter:
+  - player_join
+  - player_leave
+  - player_chat
+  - player_command
+  - player_banned
+  - player_kicked
+  - server_start
+  - server_stop
+
+# -----------------------------------------------------------------
+# Localised filter rules
+# Rules are evaluated in order; first match wins.
+#
+# Fields:
+#   name        – human-readable rule name (for logs)
+#   event_types – list of event names that trigger this rule
+#   match_field – which event field to test: "player", "ip", or "message"
+#   pattern     – case-insensitive regular expression
+#   action      – "kick" or "ban"
+#   reason      – message shown to the player (and sent to the server)
+# -----------------------------------------------------------------
+filters:
+  - name: "block-slurs"
+    event_types: ["player_chat"]
+    match_field: "message"
+    pattern: "badword1|badword2"
+    action: "kick"
+    reason: "Inappropriate language"
+
+  - name: "ban-known-griefer"
+    event_types: ["player_join"]
+    match_field: "player"
+    pattern: "^GrieferMcGrief$"
+    action: "ban"
+    reason: "Permanently banned"
+
+  - name: "block-vpn-subnet"
+    event_types: ["player_join"]
+    match_field: "ip"
+    pattern: "^10\\.0\\.1\\."
+    action: "kick"
+    reason: "VPN connections not allowed"
+
+# -----------------------------------------------------------------
+# REST API
+# Runs on localhost only by default. Protect with a strong token.
+#
+# Endpoints:
+#   GET  /status          — server status + online players
+#   POST /command         — {"command": "say Hello"}
+#   POST /kick            — {"player": "Alex", "reason": "..."}
+#   POST /ban             — {"player": "Alex", "uuid": "...", "reason": "..."}
+#   POST /unban           — {"player": "Alex"}
+#   POST /server/start    — start the Minecraft server
+#   POST /server/stop     — {"timeout": 30}
+#
+# All requests need: Authorization: Bearer <token>
+# -----------------------------------------------------------------
+api:
+  enabled: true
+  host: "127.0.0.1"
+  port: 8765
+  token: "change-me-to-a-long-random-secret"
+
+# -----------------------------------------------------------------
+# Packet IDs for Minecraft Java Edition 1.21.4 (protocol 769).
+# Only change these if your server runs a different MC version.
+# Reference: https://wiki.vg/Protocol
+# Full event inspection (chat, commands) requires the backend
+# server to run in offline-mode=false so packets are unencrypted.
+# -----------------------------------------------------------------
+packet_ids:
+  login_compression: 0x03
+  login_success: 0x02
+  login_start: 0x00
+  login_acknowledged: 0x03
+  finish_configuration: 0x03
+  ack_finish_configuration: 0x03
+  chat_message: 0x06
+  chat_command: 0x04
+  disconnect_login: 0x00
+  disconnect_configuration: 0x02
+  disconnect_play: 0x1D
+
+# -----------------------------------------------------------------
+# Logging
+# Set file: to a path to persist logs (required in daemon mode).
+# -----------------------------------------------------------------
+logging:
+  level: "INFO"         # DEBUG | INFO | WARNING | ERROR
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+  file: ""              # e.g. "/var/log/mc-proxy.log"
