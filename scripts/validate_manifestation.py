@@ -115,6 +115,19 @@ def main():
         refuse(pr, issue, f"🛑 **Genesis Refused:** Total manifestation too large ({total_bytes:,} > {MAX_TOTAL_BYTES:,} bytes).")
         return
 
+    # Stage 4b: enforce the webapp-only rule (Law 1). Every manifestation
+    # must include at least one .html file under a subdirectory — that's
+    # the architect's webapp entry point. CLI scripts, libraries, and
+    # other non-rendered output get refused here even if Claude tried to
+    # ship them anyway.
+    new_html = [
+        e for e in files
+        if not e["status"].startswith("D") and e["path"].lower().endswith((".html", ".htm"))
+    ]
+    if not new_html:
+        refuse(pr, issue, "🛑 **Genesis Refused:** Sprout only manifests displayable webapps now — no `.html` was produced. The terminal is somebody else's universe.")
+        return
+
     # Stage 5: merge and seal
     try:
         pr.merge(merge_method="squash", commit_message=f"Genesis: manifest from Issue #{ISSUE_NUMBER}")
